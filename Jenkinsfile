@@ -35,7 +35,7 @@ pipeline {
                     sh """
                         docker save ${DOCKER_IMAGE} | bzip2 | ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'bunzip2 | docker load'
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker stop ${DOCKER_IMAGE} || true && docker rm ${DOCKER_IMAGE} || true'
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker run -d --name ${DOCKER_IMAGE} -p 8080:8080 ${DOCKER_IMAGE}'
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker run -d --name ${DOCKER_IMAGE} -p 8081:8080 ${DOCKER_IMAGE}'
                     """
                 }
             }
