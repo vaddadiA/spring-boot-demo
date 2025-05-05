@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'your-spring-app'
-        DEPLOY_SERVER = 'root@3.99.157.27'
+        DEPLOY_SERVER = 'ec2-user@3.99.157.27'
     }
     stages {
         stage('Clone') {
