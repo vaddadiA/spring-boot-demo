@@ -1,8 +1,8 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'your-spring-app'
         DEPLOY_SERVER = 'ec2-user@3.99.157.27'
+        DOCKER_IMAGE = 'your-spring-app'
     }
     stages {
         stage('Clone') {
@@ -26,13 +26,17 @@ pipeline {
             }
         }
         stage('Push & Deploy') {
+            environment {
+                DEPLOY_SERVER = 'ec2-user@3.99.179.32'
+                DOCKER_IMAGE = 'your-spring-app' // replace with actual image
+            }
             steps {
                 sshagent(['ssh-deploy-key']) {
-                    sh '''
-                    docker save $DOCKER_IMAGE | bzip2 | ssh $DEPLOY_SERVER 'bunzip2 | docker load'
-                    ssh $DEPLOY_SERVER 'docker stop $DOCKER_IMAGE || true && docker rm $DOCKER_IMAGE || true'
-                    ssh $DEPLOY_SERVER 'docker run -d --name $DOCKER_IMAGE -p 8080:8080 $DOCKER_IMAGE'
-                    '''
+                    sh """
+                        docker save ${DOCKER_IMAGE} | bzip2 | ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'bunzip2 | docker load'
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker stop ${DOCKER_IMAGE} || true && docker rm ${DOCKER_IMAGE} || true'
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker run -d --name ${DOCKER_IMAGE} -p 8080:8080 ${DOCKER_IMAGE}'
+                    """
                 }
             }
         }
