@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh 'sudo docker build -t $DOCKER_IMAGE .'
             }
         }
         stage('Push & Deploy') {
