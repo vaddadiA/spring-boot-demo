@@ -12,12 +12,12 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh '/opt/maven/bin/mvn clean package -DskipTests'
             }
         }
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh '/opt/maven/bin/mvn test'
             }
         }
         stage('Docker Build') {
