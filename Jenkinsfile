@@ -29,8 +29,7 @@ pipeline {
             steps {
                 script {
                     // Scan the local image and output in table format
-                    sh 'trivy image --severity HIGH,CRITICAL --format json -o trivy-report.json $DOCKER_IMAGE || true'
-                    archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                    sh 'trivy image --severity HIGH,CRITICAL $DOCKER_IMAGE'
                 }
             }
         }
