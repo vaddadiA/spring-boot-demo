@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DEPLOY_SERVER = 'ec2-user@3.99.157.27'
+        DEPLOY_SERVER = 'ec2-user@15.223.121.66'
         DOCKER_IMAGE = 'your-spring-app'
     }
     stages {
@@ -27,7 +27,7 @@ pipeline {
         }
         stage('Push & Deploy') {
             environment {
-                DEPLOY_SERVER = 'ec2-user@3.99.179.32'
+                DEPLOY_SERVER = 'ec2-user@15.223.121.66'
                 DOCKER_IMAGE = 'your-spring-app' // replace with actual image
             }
             steps {
