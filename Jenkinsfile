@@ -25,6 +25,14 @@ pipeline {
                 sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    // Scan the local image and output in table format
+                    sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL $DOCKER_IMAGE'
+                }
+            }
+        }
         stage('Push & Deploy') {
             environment {
                 DEPLOY_SERVER = 'ec2-user@15.223.121.66'
@@ -39,6 +47,11 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+    post {
+        failure {
+            echo 'Pipeline failed. Check logs for errors (Trivy scan, build, or deploy issues).'
         }
     }
 }
