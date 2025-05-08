@@ -51,12 +51,11 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
                     sh '''
-                        export KUBECONFIG=$KUBECONFIG_FILE
-                        kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
-                        kubectl rollout status deployment/spring-app --namespace=default
-                    '''
+                    aws eks update-kubeconfig --region ca-central-1 --name nk
+                    kubectl set image deployment/spring-app spring-app=3.96.173.71:8083/spring-app:25 --namespace=default
+                '''
                 }
             }
         }
