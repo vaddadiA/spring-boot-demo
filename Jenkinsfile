@@ -78,7 +78,9 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
+                sh '''
+                    kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
+                '''
             }
         }
     }
