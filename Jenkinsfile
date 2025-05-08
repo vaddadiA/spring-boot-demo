@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'spring-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        NEXUS_REGISTRY = '3.96.173.71:8083'
+        NEXUS_REGISTRY = '52.60.137.39:8083'
         FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
     }
     stages {
@@ -54,7 +54,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
                     sh '''
                     aws eks update-kubeconfig --region ca-central-1 --name nk
-                    kubectl set image deployment/spring-app spring-app=3.96.173.71:8083/spring-app:25 --namespace=default
+                    kubectl set image deployment/spring-app spring-app=52.60.137.39:8083/spring-app:25 --namespace=default
                 '''
                 }
             }
