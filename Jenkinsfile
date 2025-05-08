@@ -52,26 +52,22 @@ pipeline {
         stage('Configure EKS') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
-                    sh 'aws eks update-kubeconfig --region ca-central-1 --name nk'
-                }
-            }
-        }
+                    sh '''
+                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                        aws eks update-kubeconfig --region ca-central-1 --name nk
 
-        stage('Apply K8s YAML (if needed)') {
-            steps {
-                script {
-                    def deploymentExists = sh (
-                        script: "kubectl get deployment spring-app --namespace=default || true",
-                        returnStdout: true
-                    ).trim()
+                        # Run kubectl commands in same shell with env
+                        if ! kubectl get deployment spring-app --namespace=default; then
+                            echo "spring-app deployment not found. Applying YAMLs..."
+                            kubectl apply -f k8s/deployment.yaml
+                            kubectl apply -f k8s/service.yaml
+                        else
+                            echo "spring-app deployment already exists. Skipping apply."
+                        fi
 
-                    if (deploymentExists.contains('NotFound')) {
-                        echo "spring-app deployment not found. Applying deployment and service YAML..."
-                        sh 'kubectl apply -f k8s/deployment.yaml'
-                        sh 'kubectl apply -f k8s/service.yaml'
-                    } else {
-                        echo "spring-app deployment already exists. Skipping YAML apply."
-                    }
+                        kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
+                    '''
                 }
             }
         }
