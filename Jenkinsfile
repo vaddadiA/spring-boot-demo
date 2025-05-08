@@ -49,12 +49,31 @@ pipeline {
             }
         }
 
+        stage('Apply K8s YAML (if needed)') {
+            steps {
+                script {
+                    def deploymentExists = sh (
+                        script: "kubectl get deployment spring-app --namespace=default || true",
+                        returnStdout: true
+                    ).trim()
+
+                    if (deploymentExists.contains('NotFound')) {
+                        echo "spring-app deployment not found. Applying deployment and service YAML..."
+                        sh 'kubectl apply -f k8s/deployment.yaml'
+                        sh 'kubectl apply -f k8s/service.yaml'
+                    } else {
+                        echo "spring-app deployment already exists. Skipping YAML apply."
+                    }
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
                     sh '''
                     aws eks update-kubeconfig --region ca-central-1 --name nk
-                    kubectl set image deployment/spring-app spring-app=52.60.137.39:8083/spring-app:25 --namespace=default
+                    kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
                 '''
                 }
             }
