@@ -49,6 +49,14 @@ pipeline {
             }
         }
 
+        stage('Configure EKS') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
+                    sh 'aws eks update-kubeconfig --region ca-central-1 --name nk'
+                }
+            }
+        }
+
         stage('Apply K8s YAML (if needed)') {
             steps {
                 script {
@@ -70,15 +78,9 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
-                    sh '''
-                    aws eks update-kubeconfig --region ca-central-1 --name nk
-                    kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
-                '''
-                }
+                kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
             }
         }
-
     }
 
     post {
