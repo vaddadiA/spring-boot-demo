@@ -7,6 +7,6 @@ spec:
     app: spring-app
   ports:
     - protocol: TCP
-      port: 8082        # Port on the Service
-      targetPort: 8082  # Port on the container
+      port: 8080        # Port on the Service
+      targetPort: 8080  # Port on the container
   type: LoadBalancer    # or ClusterIP / NodePort as needed
