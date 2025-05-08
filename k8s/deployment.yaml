@@ -16,4 +16,4 @@ spec:
       - name: spring-app
         image: 99.79.71.6:8083/spring-app:latest
         ports:
-        - containerPort: 8082
+        - containerPort: 8080
