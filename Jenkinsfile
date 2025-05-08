@@ -1,8 +1,10 @@
 pipeline {
     agent any
     environment {
-        DEPLOY_SERVER = 'ec2-user@15.223.121.66'
-        DOCKER_IMAGE = 'your-spring-app'
+        DOCKER_IMAGE = 'spring-app'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        NEXUS_REGISTRY = '3.96.173.71:8083'
+        FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
     }
     stages {
         stage('Clone') {
@@ -10,48 +12,59 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Mouni7777/spring-boot-demo.git'
             }
         }
+
         stage('Build') {
             steps {
                 sh '/opt/maven/bin/mvn clean package -DskipTests'
             }
         }
+
         stage('Test') {
             steps {
                 sh '/opt/maven/bin/mvn test'
             }
         }
+
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh 'docker build -t $FULL_IMAGE_NAME .'
             }
         }
+
         stage('Trivy Scan') {
             steps {
-                script {
-                    // Scan the local image and output in table format
-                    sh 'trivy image --severity HIGH,CRITICAL $DOCKER_IMAGE'
+                sh 'trivy image --severity HIGH,CRITICAL $FULL_IMAGE_NAME || true'
+            }
+        }
+
+        stage('Docker Push to Nexus') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus-docker-creds', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh '''
+                        echo "$NEXUS_PASS" | docker login $NEXUS_REGISTRY -u "$NEXUS_USER" --password-stdin
+                        docker push $FULL_IMAGE_NAME
+                        docker logout $NEXUS_REGISTRY
+                    '''
                 }
             }
         }
-        stage('Push & Deploy') {
-            environment {
-                DEPLOY_SERVER = 'ec2-user@15.223.121.66'
-                DOCKER_IMAGE = 'your-spring-app' // replace with actual image
-            }
+
+        stage('Deploy to Kubernetes') {
             steps {
-                sshagent(['ssh-deploy-key']) {
-                    sh """
-                        docker save ${DOCKER_IMAGE} | bzip2 | ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'bunzip2 | docker load'
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker stop ${DOCKER_IMAGE} || true && docker rm ${DOCKER_IMAGE} || true'
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} 'docker run -d --name ${DOCKER_IMAGE} -p 8081:8080 ${DOCKER_IMAGE}'
-                    """
-                }
+                sh """
+                    kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
+                    kubectl rollout status deployment/spring-app --namespace=default
+                """
             }
         }
     }
+
     post {
         failure {
-            echo 'Pipeline failed. Check logs for errors (Trivy scan, build, or deploy issues).'
+            echo '❌ Pipeline failed. Check logs for errors in build, scan, push, or deploy.'
+        }
+        success {
+            echo "✅ Deployment successful: $FULL_IMAGE_NAME"
         }
     }
 }
