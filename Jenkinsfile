@@ -71,14 +71,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    kubectl set image deployment/spring-app spring-app=$FULL_IMAGE_NAME --namespace=default
-                '''
-            }
-        }
     }
 
     post {
