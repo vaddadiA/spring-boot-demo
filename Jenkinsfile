@@ -2,15 +2,16 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.6' // <-- Use the Maven tool you configured in Jenkins
+        maven 'Maven 3.8.6' 
     }
 
-    environment {
-        DOCKER_IMAGE = 'spring-app'
-        IMAGE_TAG = "${BUILD_NUMBER}"
-        NEXUS_REGISTRY = '99.79.71.6:8083'
-        FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
-    }
+  environment {
+    DOCKER_IMAGE = 'spring-app'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    NEXUS_REGISTRY = '99.79.71.6:8083'
+    FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
+  }
+
 
     stages {
         stage('Clone') {
