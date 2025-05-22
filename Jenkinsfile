@@ -1,11 +1,17 @@
 pipeline {
     agent any
+
+    tools {
+        maven 'Maven 3.8.6' // <-- Use the Maven tool you configured in Jenkins
+    }
+
     environment {
         DOCKER_IMAGE = 'spring-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
         NEXUS_REGISTRY = '99.79.71.6:8083'
         FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
     }
+
     stages {
         stage('Clone') {
             steps {
@@ -15,13 +21,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh '/opt/maven/bin/mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                sh '/opt/maven/bin/mvn test'
+                sh 'mvn test'
             }
         }
 
@@ -44,7 +50,7 @@ pipeline {
                         echo "$NEXUS_PASS" | docker login $NEXUS_REGISTRY -u "$NEXUS_USER" --password-stdin
                         docker push $FULL_IMAGE_NAME
                         docker logout $NEXUS_REGISTRY
-                    '''
+                       ... 
                 }
             }
         }
