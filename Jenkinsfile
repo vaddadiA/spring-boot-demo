@@ -64,7 +64,7 @@ pipeline {
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         aws eks update-kubeconfig --region ca-central-1 --name nk
 
-                        # Run kubectl commands in same shell with env
+                        // Run kubectl commands in same shell with env
                         if ! kubectl get deployment spring-app --namespace=default; then
                             echo "spring-app deployment not found. Applying YAMLs..."
                             kubectl apply -f k8s/deployment.yaml
