@@ -2,16 +2,15 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.6' 
+        maven 'Maven 3.8.6'
     }
 
-  environment {
-    DOCKER_IMAGE = 'spring-app'
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    NEXUS_REGISTRY = '99.79.71.6:8083'
-    FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
-  }
-
+    environment {
+        DOCKER_IMAGE = 'spring-app'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        NEXUS_REGISTRY = '99.79.71.6:8083'
+        FULL_IMAGE_NAME = "${NEXUS_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
+    }
 
     stages {
         stage('Clone') {
@@ -51,7 +50,7 @@ pipeline {
                         echo "$NEXUS_PASS" | docker login $NEXUS_REGISTRY -u "$NEXUS_USER" --password-stdin
                         docker push $FULL_IMAGE_NAME
                         docker logout $NEXUS_REGISTRY
-                       ... 
+                    '''
                 }
             }
         }
@@ -64,7 +63,7 @@ pipeline {
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         aws eks update-kubeconfig --region ca-central-1 --name nk
 
-                        // Run kubectl commands in same shell with env
+                        # Run kubectl commands in same shell with env
                         if ! kubectl get deployment spring-app --namespace=default; then
                             echo "spring-app deployment not found. Applying YAMLs..."
                             kubectl apply -f k8s/deployment.yaml
@@ -85,7 +84,7 @@ pipeline {
             echo '❌ Pipeline failed. Check logs for errors in build, scan, push, or deploy.'
         }
         success {
-            echo "✅ Deployment successful: $FULL_IMAGE_NAME"
+            echo "✅ Deployment successful: ${env.FULL_IMAGE_NAME}"
         }
     }
 }
