@@ -24,6 +24,11 @@ pipeline {
                 sh 'mvn clean package -DskipTests'
             }
         }
+      stage('Verify JAR File') {
+        steps {
+        sh 'ls -l target'
+       }
+     }
 
         stage('Test') {
             steps {
